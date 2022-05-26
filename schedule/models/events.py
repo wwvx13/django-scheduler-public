@@ -1,3 +1,4 @@
+import logging
 import datetime
 
 import pytz
@@ -15,6 +16,8 @@ from django.utils.translation import gettext, gettext_lazy as _
 from schedule.models.calendars import Calendar
 from schedule.models.rules import Rule
 from schedule.utils import OccurrenceReplacer
+
+log = logging.getLogger(__name__)
 
 freq_dict_order = {
     "YEARLY": 0,
@@ -598,11 +601,16 @@ class Occurrence(models.Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        log.debug('??? %s %s', self.title, self.event_id)
         if not self.title and self.event_id:
             self.title = self.event.title
         if not self.description and self.event_id:
             self.description = self.event.description
 
+    def delete(self, *args, **kwargs):
+        log.debug('??? %s %s', self.title, self.event_id)
+        return super().delete(*args, **kwargs)
+    
     def moved(self):
         return self.original_start != self.start or self.original_end != self.end
 
